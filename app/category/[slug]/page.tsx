@@ -14,10 +14,39 @@ type ResponseType = {
   products: CategoryProducts[];
 };
 
-export const metadata: Metadata = {
-  title: "Category",
-  description: "product categories",
+type PageParams = {
+  params: Promise<{ slug: string }>;
 };
+
+const normalizedSlug = (slug: string): string[] => {
+  return slug.split("-");
+};
+
+const capitalizedSlug = (slug: string): string => {
+  const normalizedSlugArr = normalizedSlug(slug);
+
+  const transform = (text: string) =>
+    `${text[0].toUpperCase()}${text.slice(1)}`;
+
+  // console.log({ splitted, transform: transform(slug) });
+
+  if (normalizedSlugArr.length === 1) return transform(slug);
+
+  return normalizedSlugArr.map((text) => transform(text)).join(" ");
+};
+
+export async function generateMetadata({
+  params,
+}: PageParams): Promise<Metadata> {
+  const { slug } = await params;
+
+  return {
+    title: capitalizedSlug(slug) ?? "Category not found",
+    description: slug
+      ? `Products of ${capitalizedSlug(slug)} category`
+      : "The category you are looking for could not be found.",
+  };
+}
 
 export async function generateStaticParams() {
   const res = await fetch(`${config.BASE_URL}/products/categories`);
@@ -26,11 +55,7 @@ export async function generateStaticParams() {
   return categories.map(({ slug }) => ({ slug }));
 }
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function CategoryPage({ params }: PageParams) {
   const { slug } = await params;
   const res = await fetch(`${config.BASE_URL}/products/category/${slug}`, {
     next: {
