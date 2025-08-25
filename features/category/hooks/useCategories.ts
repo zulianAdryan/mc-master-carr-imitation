@@ -2,16 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { Category } from "../types";
 import { config } from "@/lib/config";
+import { CATEGORY_QUERY_KEY } from "../constants";
 
 export const useCategories = () => {
   return useQuery({
-    queryKey: ["categories"],
+    queryKey: [CATEGORY_QUERY_KEY.CATEGORY],
     queryFn: async () => {
       const res = await fetch(`${config.BASE_URL}/products/categories`);
       const categories: Category[] = await res.json();
       return categories;
     },
-    staleTime: 3600 * 1000, // for each 1 hour data considered still fresh
-    gcTime: 7200 * 1000, // for each 2 hour data in cache will always re-used
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 };

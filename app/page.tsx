@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
+
 import { InfiniteProductList } from "@/features/products/InfiniteProductList";
+
+export const metadata: Metadata = {
+  title: "All products",
+  description: "all product from each of categories",
+};
 
 export default function Page() {
   return (

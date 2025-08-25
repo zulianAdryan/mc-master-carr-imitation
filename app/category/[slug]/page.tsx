@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ProductItemCard } from "@/components/product-item-card";
@@ -11,6 +12,11 @@ type ResponseType = {
   skip: number;
   limit: number;
   products: CategoryProducts[];
+};
+
+export const metadata: Metadata = {
+  title: "Category",
+  description: "product categories",
 };
 
 export async function generateStaticParams() {

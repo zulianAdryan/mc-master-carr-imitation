@@ -20,7 +20,8 @@ export const useInfiniteProducts = () => {
       const nextSkip = lastPage.skip + lastPage.limit;
       return nextSkip < lastPage.total ? nextSkip : undefined;
     },
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60, // 1 hour
     placeholderData: {
       pages: [],
       pageParams: [0],
