@@ -39,28 +39,41 @@ export default function ProductPage({ product }: { product: Product }) {
                 onClick={() => {
                   setSelectedImageIndex(i);
                 }}
+                aria-label={i.toString()}
               >
                 <Image
                   src={src}
                   alt={`${product?.title}-${i}`}
                   fill
                   sizes="(min-width: 1536px) 110px, 90px"
-                  className="object-contain select-none p-[4px] 2xl:p-[8px]"
+                  className="p-[4px] 2xl:p-[8px]"
+                  style={{
+                    objectFit: "contain",
+                    userSelect: "none",
+                  }}
                   draggable={false}
                   quality={10}
                 />
               </Button>
             ))}
           </div>
-          <div className="relative border rounded-lg w-full h-[50dvh] 2xl:w-[500px] 2xl:h-full">
+          <div
+            style={{
+              position: "relative",
+            }}
+            className="border rounded-lg w-full h-[50dvh] 2xl:w-[500px] 2xl:h-full"
+          >
             <Image
               src={product?.images[selectedImageIndex]}
               alt={product?.title}
               sizes="(min-width: 1536px) 500px, 100vw"
               fill
-              className="object-contain select-none p-[20px]"
+              style={{
+                objectFit: "contain",
+                userSelect: "none",
+                padding: "20px",
+              }}
               draggable={false}
-              priority
             />
           </div>
         </div>
