@@ -27,7 +27,7 @@ Please note that Lighthouse scores and performance results may vary depending on
 
 ## API Reference
 
-This project use open source dummy API from [dummyjson](hhttps://dummyjson.com/) as the server mock feeding the content for client to see
+This project use open source dummy API from [dummyjson](https://dummyjson.com/) as the server mock feeding the content for client to see
 
 ## Demo
 
@@ -137,7 +137,9 @@ A well-optimized website should be both accessible to users and readable by sear
 
 ✅ Semantic HTML
 
-Use semantic tags like <main>, <section>, <article>, <aside>, etc. Also use aria-label, title, and role attributes where appropriate for accessibility.
+Use semantic tags like `main`, `aside`, `section`,`article`, `h1`, etc.
+
+Also use `aria-label`, `title`, and `role` attributes where appropriate for accessibility.
 
 ✅ Metadata
 
@@ -211,7 +213,7 @@ This component:
 
 Infinite scrolling large datasets without lag? That’s thanks to virtualization — rendering only what's visible in the viewport.
 
-In this example I'm using `react-virtuoso` open source library for virtualization. Tanstack is also published a library for virtualization but I see it still new and I just already used to using `react-virtuoso` so maybe if you want, you can see their documentation on [Tanstack Virtual](https://tanstack.com/virtual/latest/docs/introduction)
+In this example I'm using `react-virtuoso` open source library for virtualization. Tanstack is also published a library for virtualization, but I see it is still new, so maybe if you want you can see their documentation on [Tanstack Virtual](https://tanstack.com/virtual/latest/docs/introduction)
 
 ```tsx
 // This is the component that implements virtualization
