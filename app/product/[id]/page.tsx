@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import ProductPage from "./product-page";
+import ProductPageContent from "./product-page-content";
 
 import type { Product } from "@/features/products/types";
 import { getProductById } from "@/features/products/services/getProductById";
@@ -24,11 +24,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductLayoutPage({ params }: PageParams) {
+export default async function ProductPage({ params }: PageParams) {
   const { id } = await params;
   const product = await getProductById(id);
 
   if (!product) return notFound();
 
-  return <ProductPage product={product} />;
+  return <ProductPageContent product={product} />;
 }

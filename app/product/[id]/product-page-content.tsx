@@ -19,7 +19,7 @@ import type { Product } from "@/features/products/types";
 import { formatterCurrency, formatterDate } from "@/lib/helper";
 import { cn } from "@/lib/utils";
 
-export default function ProductPage({ product }: { product: Product }) {
+export default function ProductPageContent({ product }: { product: Product }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
 
