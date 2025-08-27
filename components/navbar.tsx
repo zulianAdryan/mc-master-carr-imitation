@@ -14,15 +14,30 @@ export const Navbar = () => {
   return (
     <>
       <nav
-        className="fixed border-b p-[1.5dvh_2dvh] lg:p-[1.5dvh_1dvw] bg-white w-full top-0 left-0 flex items-center justify-between gap-3"
+        className="border-b"
         style={{
+          position: "fixed",
+          padding: "1.5dvh 2dvh",
+          backgroundColor: "#fff",
+          width: "100%",
+          top: 0,
+          left: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
           height: NAVBAR_HEIGHT,
           zIndex: 50,
         }}
       >
-        <Link href={"/"} className="text-lg lg:text-2xl font-bold">
-          McMaster Imitation
-        </Link>
+        <h1
+          style={{
+            fontSize: "1.125rem",
+            fontWeight: "bold",
+          }}
+        >
+          <Link href={"/"}>McMaster Imitation</Link>
+        </h1>
 
         <MenuSquareIcon
           className="lg:hidden"
@@ -34,11 +49,15 @@ export const Navbar = () => {
 
       {isMenuOpen && (
         <div
-          className="absolute bg-white left-0 right-0 p-[1dvh_3.5dvw]"
           style={{
+            backgroundColor: "#fff",
+            position: "absolute",
+            left: 0,
+            right: 0,
             top: NAVBAR_HEIGHT,
             zIndex: 40,
             height: `calc(100dvh - 50px)`,
+            padding: "1dvh 3.5dvw",
           }}
         >
           <CategoryLinks />

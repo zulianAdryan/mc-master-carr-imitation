@@ -48,6 +48,8 @@ export async function generateMetadata({
   };
 }
 
+const MIN_IMAGE_TO_EAGER_LOADING = 32; // because the maximum items from the grid of the largest screen on first render is 32 items
+
 export async function generateStaticParams() {
   const res = await fetch(`${config.BASE_URL}/products/categories`);
   const categories: Category[] = await res.json();
@@ -72,12 +74,31 @@ export default async function CategoryPage({ params }: PageParams) {
 
   return (
     <div className="h-full overflow-auto flex flex-col gap-4">
-      <h1 className="text-base md:text-xl font-semibold capitalize">{title}</h1>
+      <h1
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: 600,
+          textTransform: "capitalize",
+        }}
+      >
+        {title}
+      </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 w-full gap-4">
-        {products?.map((product) => (
+      <div
+        style={{
+          display: "grid",
+          width: "100%",
+          gap: "1rem",
+        }}
+        className="grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 w-full"
+      >
+        {products?.map((product, i) => (
           <Link key={product.id} href={`/product/${product.id}`}>
-            <ProductItemCard {...product} />
+            <ProductItemCard
+              {...product}
+              loading={i <= MIN_IMAGE_TO_EAGER_LOADING ? "eager" : "lazy"}
+              fetchPriority={i <= MIN_IMAGE_TO_EAGER_LOADING ? "high" : "auto"}
+            />
           </Link>
         ))}
       </div>

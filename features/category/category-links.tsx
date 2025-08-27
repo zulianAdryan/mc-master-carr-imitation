@@ -8,12 +8,24 @@ export const CategoryLinks = () => {
   const categories = useCategories();
 
   return (
-    <div className="flex flex-col w-full pb-[25px] sm:gap-4 gap-2">
+    <div
+      className="gap-2 sm:gap-4"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        paddingBottom: "25px",
+      }}
+    >
       {categories.data?.map(({ name, slug }) => (
         <Link
           key={slug}
           href={`/category/${slug}`}
-          className="w-full text-base xl:text-xs p-[4rem] xl:p-[0.25rem] hover:bg-secondary"
+          className="text-base xl:text-xs hover:bg-secondary"
+          style={{
+            width: "100%",
+            padding: "0.25rem",
+          }}
           prefetch={true} // prefetch when hover
         >
           {name}

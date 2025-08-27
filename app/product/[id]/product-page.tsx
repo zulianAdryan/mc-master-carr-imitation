@@ -69,7 +69,13 @@ export default function ProductPage({ product }: { product: Product }) {
       <section className="border rounded-lg p-[1rem_1.5rem]">
         <div className="flex items-start justify-between gap-4 mb-2">
           <div className="flex flex-col items-start justify-start gap-1">
-            <h1 className="text-xl lg:text-2xl font-semibold text-left">
+            <h1
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                textAlign: "left",
+              }}
+            >
               {product?.title}
             </h1>
             <div className="flex justify-start items-center gap-x-1 lg:gap-x-2">
@@ -82,12 +88,14 @@ export default function ProductPage({ product }: { product: Product }) {
               {formatterCurrency(product?.price)}
             </Label>
             <div
-              className={cn("inline-flex gap-x-1 items-center text-amber-500", {
+              className={cn("inline-flex gap-x-1 items-center text-rose-500", {
                 invisible: product?.discountPercentage <= 0,
               })}
             >
               <TrendingDownIcon className="size-[16px] lg:size-[18px]" />
-              <p className="text-sm">{product?.discountPercentage}%</p>
+              <p className="text-sm text-rose-600 font-semibold">
+                {product?.discountPercentage}%
+              </p>
             </div>
           </div>
         </div>
@@ -173,8 +181,8 @@ export default function ProductPage({ product }: { product: Product }) {
       <section className="border rounded-lg p-4 flex flex-col gap-y-4 h-fit">
         <div>
           <p
-            className={cn("text-lg font-semibold", {
-              "text-green-600": isStockAvailable,
+            className={cn("text-lg font-bold", {
+              "text-green-700": isStockAvailable,
               "text-destructive": !isStockAvailable,
             })}
           >
@@ -195,6 +203,7 @@ export default function ProductPage({ product }: { product: Product }) {
             <Button
               variant={"outline"}
               size={"sm"}
+              aria-label="reduce"
               disabled={!isStockAvailable || orderCount === 0}
               onClick={() => {
                 setOrderCount((curr) => (curr > 0 ? curr - 1 : curr));
@@ -208,6 +217,7 @@ export default function ProductPage({ product }: { product: Product }) {
             <Button
               variant={"outline"}
               size={"sm"}
+              aria-label="add"
               disabled={!isStockAvailable || orderCount >= product?.stock}
               onClick={() => {
                 setOrderCount((curr) =>

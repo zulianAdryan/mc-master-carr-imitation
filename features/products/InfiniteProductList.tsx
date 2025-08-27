@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 
 import { useInfiniteProducts } from "./hooks/useInfiniteProducts";
 
+const MIN_IMAGE_TO_EAGER_LOADING = 32; // because the maximum items from the grid of the largest screen on first render is 32 items
+
 export const InfiniteProductList = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteProducts();
@@ -41,9 +43,13 @@ export const InfiniteProductList = () => {
             </Label>
           ) : null,
       }}
-      itemContent={(_, product) => (
+      itemContent={(i, product) => (
         <Link key={product.id} href={`/product/${product.id}`}>
-          <ProductItemCard {...product} />
+          <ProductItemCard
+            {...product}
+            loading={i <= MIN_IMAGE_TO_EAGER_LOADING ? "eager" : "lazy"}
+            fetchPriority={i <= MIN_IMAGE_TO_EAGER_LOADING ? "high" : "auto"}
+          />
         </Link>
       )}
     />
