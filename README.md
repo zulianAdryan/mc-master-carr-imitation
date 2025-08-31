@@ -2,24 +2,15 @@
 
 If you've ever searched for or come across discussions about website performance, [McMaster-Carr](https://www.mcmaster.com/) is almost always referred to as the fastest website in the world. Since the site is genuinely that fast, I wanted to recreate it using the latest modern technologies available as of 2025, with Next.js as the foundation.
 
-The goal of this project is to closely mimic its simplicity, speed, and efficiency — not to focus on animations, aesthetics, or other visual enhancements.
+## Goals
 
-Test are using [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) from Chrome browser.
+The goal of this project is to closely mimic its simplicity, speed, and efficiency and not to focus on animations, aesthetics, or other visual enhancements.
 
-## ⚠️ Disclaimer
-
-Please note that Lighthouse scores and performance results may vary depending on your:
-
-- Device performance (CPU, RAM, etc.)
-- Network connection (Wi-Fi, 4G, etc.)
-- Background activity (apps, browser tabs, etc.)
-
-> For the most accurate results, I highly recommend testing the site in an Incognito window with no browser extensions enabled.
-> Some browser extensions can significantly affect Lighthouse metrics by injecting scripts or delaying page load.
+[Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) are used to determine the website performance.
 
 ## Tech Stack
 
-- [Next JS](https://nextjs.org/docs) (app router)
+- [Next JS](https://nextjs.org/docs) [App router]
 - [TailwindCSS](https://tailwindcss.com/)
 - [Shadcn](https://ui.shadcn.com/)
 - [Tanstack Query](https://tanstack.com/query/latest/docs/framework/react/overview)
@@ -33,13 +24,35 @@ This project use open source dummy API from [dummyjson](https://dummyjson.com/) 
 
 McMaster-Carr imitation web [demo link](https://mc-master-carr-imitation.vercel.app/)🌐
 
-## Features
+## Key Features
 
-- Virtualization of showcase all products
-- Responsive layout
-- Data caching and validation
+- Infinite scroll product list with virtualization
+- Server components and Client components combo
+- SEO-optimized with dynamic metadata
+- Server-side and client-side data caching
+- Responsive layout using TailwindCSS
+- ISR (Incremental Static Regeneration)
 
-# How This McMaster-Carr Imitation Website Works
+With the correct implementation I succeed to achieve 100 points performance on Lighthouse Chrome browser for all the 3 main pages:
+
+![Alt CSR](docs/CSR.gif)
+
+![Alt ISR](docs/ISR.gif)
+
+![Alt SSR](docs/SSR.gif)
+
+## ⚠️ Disclaimer
+
+Please note that Lighthouse scores and performance results may vary depending on your:
+
+- Device performance (CPU, RAM, etc.)
+- Network connection (Wi-Fi, 4G, etc.)
+- Background activity (apps, browser tabs, etc.)
+
+> For the most accurate results, I highly recommend testing the site in an Incognito window with no browser extensions enabled.
+> Some browser extensions can significantly affect Lighthouse metrics by injecting scripts or delaying page load.
+
+## Architectural Decisions
 
 We are going to see on some interesting things on how the McMaster-Carr original
 website works and try to implement that in Next JS wheter using the same way or another way. There is some point on how website can run fast other than obvious things like internet connection and device/engine specifications, which are:
@@ -52,14 +65,21 @@ However, Next.js is not a pure SPA. It supports both client-side and server-side
 
 > In this imitation project, we use Next.js App Router, combining Server Components and Client Components to mimic McMaster-Carr's speed and interactivity.
 
+Next.js supports:
+
+- Server Components (SSR/SSG/ISR)
+- Client Components (CSR)
+- Dynamic Routing
+- Metadata generation
+
 ## 2. Server-Side Rendering (SSR)
 
 SSR renders HTML on the server before sending it to the client. In Next.js, this is ideal for pages that don’t need immediate interactivity (i.e., no event listeners or hooks).
 
-Example:
+SSR is used for pages that benefit from server-side data fetching and SEO, like product pages. Example:
 
 ```ts
-// Server Component
+// Example of SSR using Server Component
 export default async function ProductPage({ params }: PageParams) {
   const { id } = await params;
   const product = await getProductById(id);
@@ -70,9 +90,9 @@ export default async function ProductPage({ params }: PageParams) {
 }
 ```
 
-Here, the server fetches product data, then passes it as props to a Client Component (ProductPage) for rendering and user interaction.
+Here, we fetches product data, then passes it to ProductPage (Client Component) for rendering and user interaction.
 
-> Server Component can have Client Component as its children, but Client Component cannot have Server Componentn as its children
+> Server Component can have Client Component as its children, but Client Component cannot have Server Component as its children
 
 ## 3. Client Side Rendering (CSR)
 
@@ -80,39 +100,62 @@ CSR renders the UI directly in the browser and allows full access to the DOM, ma
 
 In Next.js, you enable CSR by adding "use client" at the top of your component file. You’ll often use React hooks (useEffect, useState, etc.) here, especially when fetching data dynamically.
 
-In this example I'am using CSR in mainly every page since it has a mandatory user interaction mainly clicking.
+```ts
+// "use client" declares this as a Client Component
+"use client";
+```
 
-## 4. Data Caching
+This setup allows React hooks like `useState` and `useEffect`
+
+In this example I use CSR in mainly every page since it has a mandatory user interaction which mainly clicking (Link).
+
+## 4. Inline Styling for Faster Paint
+
+For critical above-the-fold content (e.g. product title, price, image), inline styling is used intentionally.
+
+This is based on how browsers prioritize style calculation:
+
+Inline styles are parsed and applied immediately during HTML parsing.
+
+External or class-based styles must wait for CSS construction.
+
+While the difference is often minimal, for content that renders in the first viewport (especially in SSR scenarios), inline styles can slightly improve first paint and LCP (Largest Contentful Paint) performance.
+
+Important: This technique is used sparingly and only where performance gain is measurable. Tailwind utility classes are still preferred for most styling.
+
+## 5. Data Caching
 
 Efficient data fetching and caching are key to performance, especially if its a heavy data. If its a data that changes rapidly then it is better to changes frequently, but for data that are not changes often we can use the same data that already fetched.
 
 ### - SSR Caching (with revalidate)
 
-Next.js lets you cache server-rendered data using the `revalidate` option:
+Next.js lets you cache server-rendered data using the `revalidate` option.
+
+Some data — such as real-time or rapidly changing content — must always be fresh. For that case, we use cache: "no-store" to disable SSR caching entirely.
 
 ```ts
 // getProductById.ts
-export const getProductById = cache(
-  async (id: Product["id"]): Promise<Product | null> => {
-    const res = await fetch(`${config.BASE_URL}/products/${id}`, {
-      next: {
-        revalidate: 600, // 10 minutes
-      },
-    });
-    const product: Product = await res.json();
+export const getProductById = async (
+  id: Product["id"]
+): Promise<Product | null> => {
+  const res = await fetch(`${config.BASE_URL}/products/${id}`, {
+    cache: "no-store", // SSR
+  });
+  const product: Product = await res.json();
 
-    return product ?? null;
-  }
-);
+  return product ?? null;
+};
 ```
 
-This caches product data for 10 minutes. You can fine-tune revalidation per API (e.g., product details: 1 hour; stock/price: 1–5 minutes).
+This guarantees that every product detail page always shows the most up-to-date data (e.g. price, stock).
 
 Advanced way on how the big e-commerce website works are make the product detail page have a bunch of different API, so like for the product detail endpoints we can set it for 1 hour, but for the price and stock endpoints we can set it much faster maybe like 1 to 5 minutes.
 
 ### - CSR Caching (with TanStack Query)
 
-For client-side caching, I use TanStack Query (React Query)
+CSR caching helps avoid redundant network requests for rarely-changing data.
+
+For client-side caching, I use TanStack Query (React Query) to make things easier.
 
 ```ts
 export const useCategories = () => {
@@ -131,52 +174,49 @@ export const useCategories = () => {
 
 Here, category data is considered fresh for 24 hours. This avoids redundant API calls for rarely updated content.
 
-## 5. SEO (Search Engine Optimization)
+## 6. ISR (Incremental Static Regeneration)
 
-A well-optimized website should be both accessible to users and readable by search engines.
+Incremental Static Regeneration (ISR) allows you to statically pre-render pages at build time and update them in the background on a time-based schedule — all without needing to rebuild the entire app.
 
-✅ Semantic HTML
+This gives you the performance benefits of static generation while keeping your content reasonably fresh.
 
-Use semantic tags like `main`, `aside`, `section`,`article`, `h1`, etc.
-
-Also use `aria-label`, `title`, and `role` attributes where appropriate for accessibility.
-
-✅ Metadata
-
-Next.js makes it easy to add both static and dynamic metadata for SEO:
+### - Pre-render dynamic routes with generateStaticParams()
 
 ```ts
-// Export the static metadata
-export const metadata: Metadata = {
-  title: "All products",
-  description: "all product from each of categories",
-};
-
-// Generate a dynamic metadata
-export async function generateMetadata({
-  params,
-}: PageParams): Promise<Metadata> {
-  const { id } = await params;
-  const product = await getProductById(id);
-
-  return {
-    title: product?.title ?? "Product not found",
-    description:
-      product?.description ??
-      "The product you are looking for could not be found.",
-  };
+export async function generateStaticParams() {
+  const categories = await getCategories();
+  return categories.map(({ slug }) => ({ slug }));
 }
 ```
 
-Metadata improves how search engines understand and index each page.
+This ensures all category pages are statically generated ahead of time for fast first loads.
 
-## 6. Image Optimization
+### - Regenerate the page every 10 minutes (revalidate: 600)
+
+When a user visits a category page, the cached static version will be served instantly. Then, after 600 seconds (10 minutes), the next request will trigger a background regeneration to fetch the latest data:
+
+```ts
+const products = await getProductsByCategory(slug, {
+  next: {
+    revalidate: 600, // revalidate every 10 minutes
+  },
+});
+```
+
+This is ideal for category pages where products may be added/removed throughout the day, but real-time accuracy isn’t critical.
+
+Note:
+Use revalidate wisely — don’t set it too low for content that doesn’t change often.
+
+## 7. Image Optimization
 
 Images are crucial for UX but can hurt performance if unoptimized.
 
-✅ Use WebP Format
+Images are optimized using Next.js `<Image />` component:
 
-WebP is preferred over jpg, jpeg, or png due to better compression and quality. With Next.js, you don’t need to manually convert formats. Just use the built-in Image component:
+- Lazy loading by default
+- Automatic sizing with sizes and fill
+- WebP served where supported
 
 ```ts
 {
@@ -188,13 +228,18 @@ WebP is preferred over jpg, jpeg, or png due to better compression and quality. 
       onClick={() => {
         setSelectedImageIndex(i);
       }}
+      aria-label={i.toString()}
     >
       <Image
         src={src}
         alt={`${product?.title}-${i}`}
         fill
         sizes="(min-width: 1536px) 110px, 90px"
-        className="object-contain select-none p-[4px] 2xl:p-[8px]"
+        className="p-[4px] 2xl:p-[8px]"
+        style={{
+          objectFit: "contain",
+          userSelect: "none",
+        }}
         draggable={false}
         quality={10}
       />
@@ -203,63 +248,68 @@ WebP is preferred over jpg, jpeg, or png due to better compression and quality. 
 }
 ```
 
-This component:
+WebP is preferred over jpg, jpeg, or png due to better compression and quality. With Next.js, you don’t need to manually convert formats.
 
-- Automatically serves optimized formats (like WebP),
-- Handles lazy loading,
-- Adjusts sizes based on viewport.
+Note: For important images such as Hero section you should use:
 
-## 7. Virtualization for Performance
+```ts
+loading="eager"
+// and or without
+priority={true}
+```
 
-Infinite scrolling large datasets without lag? That’s thanks to virtualization — rendering only what's visible in the viewport.
+This tells Next.js to load the image as soon as possible because we want the Image served as soon as possible for user.
 
-In this example I'm using `react-virtuoso` open source library for virtualization. Tanstack is also published a library for virtualization, but I see it is still new, so maybe if you want you can see their documentation on [Tanstack Virtual](https://tanstack.com/virtual/latest/docs/introduction)
+## Insteresting Facts
+
+![Alt McMaster-Carr](docs/original-image.png)
+
+The original McMaster-Carr website on product by category page, they use a single image for the products
+
+This is somehow genius because you just fetch one image and make this into a separate images. But the are downsides whereas its not a common method and this is going to be a challenging thing to do for someone new that wants to make changes to the code
+
+## 8. Virtualization (Infinite Scroll)
+
+To handle large datasets efficiently, the product list is virtualized using react-virtuoso. Only the visible items in the viewport are rendered.
+
+In this example I use `react-virtuoso` open source library for virtualization. Tanstack is also published a library for virtualization recently, you can see their documentation on [Tanstack Virtual](https://tanstack.com/virtual/latest/docs/introduction)
 
 ```tsx
 // This is the component that implements virtualization
-export const InfiniteProductList = () => {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteProducts();
-
-  const products = useMemo(
-    () => data?.pages.flatMap((page) => page.products) ?? [],
-    [data?.pages]
-  );
-
-  return (
-    <VirtuosoGrid
-      data={products}
-      endReached={() => {
-        if (hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      }}
-      className="hide-scrollbar"
-      listClassName="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4"
-      itemClassName=""
-      increaseViewportBy={{
-        bottom: 1000,
-        top: 1000,
-      }}
-      components={{
-        Footer: () =>
-          isFetchingNextPage ? (
-            <Label className="p-4 text-center text-muted-foreground text-sm">
-              Loading more...
-            </Label>
-          ) : null,
-      }}
-      itemContent={(_, product) => (
-        <Link key={product.id} href={`/product/${product.id}`}>
-          <ProductItemCard {...product} />
-        </Link>
-      )}
-    />
-  );
-};
+<VirtuosoGrid
+  data={products}
+  endReached={() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }}
+  className="hide-scrollbar"
+  listClassName="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4"
+  increaseViewportBy={{
+    bottom: 1000,
+    top: 1000,
+  }}
+  components={{
+    Footer: () =>
+      isFetchingNextPage ? (
+        <Label className="p-4 text-center text-muted-foreground text-sm">
+          Loading more...
+        </Label>
+      ) : null,
+  }}
+  itemContent={(i, product) => (
+    <Link key={product.id} href={`/product/${product.id}`}>
+      <ProductItemCard
+        {...product}
+        loading={i <= MIN_IMAGE_TO_EAGER_LOADING ? "eager" : "lazy"}
+        fetchPriority={i <= MIN_IMAGE_TO_EAGER_LOADING ? "high" : "auto"}
+      />
+    </Link>
+  )}
+/>
 ```
 
-I also use the hooks infinite query from Tanstack Query for fetching the data as we scroll the page
+Paired with useInfiniteQuery() from TanStack Query for paginated fetching:
 
 ```ts
 export const useInfiniteProducts = () => {
@@ -288,13 +338,49 @@ export const useInfiniteProducts = () => {
 
 This setup loads new data only when needed and keeps recently viewed data cached for smoother navigation.
 
+## 5. SEO (Search Engine Optimization) Strategy
+
+A well-optimized website should be both accessible to users and readable by search engines. Common SEO Strategy are:
+
+- Uses semantic HTML elements (article, section, main, h1, etc.)
+- Implements dynamic metadata per page using generateMetadata()
+- Proper alt, aria-label, and meaningful headings
+- Proper Metadata
+
+Next.js makes it easy to add both static and dynamic metadata for SEO:
+
+```ts
+// Export the static metadata
+export const metadata: Metadata = {
+  title: "All products",
+  description: "all product from each of categories",
+};
+
+// Generate a dynamic metadata
+export async function generateMetadata({
+  params,
+}: PageParams): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProductById(id);
+
+  return {
+    title: product?.title ?? "Product not found",
+    description:
+      product?.description ??
+      "The product you are looking for could not be found.",
+  };
+}
+```
+
+Metadata improves how search engines understand and index each page.
+
 # Summary
 
-This project imitates the McMaster-Carr website using Next.js, focusing on:
+This project aims to replicate the performance and simplicity of McMaster-Carr using Next.js focusing on:
 
-- Fast navigation via SPA behavior
-- Balanced SSR/CSR for SEO and interactivity
-- Smart caching (SSR and CSR)
-- Metadata and accessibility for SEO
-- Optimized images
-- Virtualized, infinite-scrolling UI
+- ✅ Fast navigation using App Router (SPA-like behavior)
+- ✅ Mixed rendering: SSR, CSR, and ISR
+- ✅ Fine-grained caching strategies (server & client)
+- ✅ Focused image and content optimization
+- ✅ SEO-conscious development
+- ✅ Virtualized UI for scaling to large datasets
