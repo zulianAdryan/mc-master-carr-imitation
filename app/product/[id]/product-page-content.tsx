@@ -27,10 +27,10 @@ export default function ProductPageContent({ product }: { product: Product }) {
     product?.availabilityStatus?.toLowerCase() === "in stock" ? true : false;
 
   return (
-    <article className="grid xs:grid-cols-3 2xl:grid-cols-[minmax(150px,_600px)_1fr_minmax(100px,_300px)] h-full overflow-y-auto hide-scrollbar lg:p-[2dvh_1.25dvw] 2xl:p-[3dvh_0.25dvw] gap-3">
+    <article className="grid xs:grid-cols-3 2xl:grid-cols-[1fr_minmax(400px,_600px)] h-full overflow-y-auto hide-scrollbar lg:p-[2dvh_1.25dvw] 2xl:p-[3dvh_0.25dvw] gap-3">
       <section className="flex flex-col">
         <div className="flex flex-col-reverse 2xl:flex-row justify-start items-start h-full gap-2">
-          <div className="flex flex-row 2xl:flex-col max-w-full min-w-fit 2xl:max-h-full w-[110px] overflow-auto gap-2">
+          <div className="flex flex-row 2xl:flex-col max-w-full min-w-fit 2xl:max-h-full w-max overflow-auto gap-2">
             {product?.images?.map((src, i) => (
               <Button
                 key={i}
@@ -61,7 +61,7 @@ export default function ProductPageContent({ product }: { product: Product }) {
             style={{
               position: "relative",
             }}
-            className="border rounded-lg w-full h-[50dvh] 2xl:w-[500px] 2xl:h-full"
+            className="border rounded-lg w-full h-[65dvh] 2xl:h-full"
           >
             <Image
               src={product?.images[selectedImageIndex]}
@@ -150,48 +150,52 @@ export default function ProductPageContent({ product }: { product: Product }) {
             />
           </div>
         </div>
+      </section>
 
-        <Separator className="my-4" />
-
-        <div className="flex flex-col justify-start items-start w-full">
-          <h2 className="text-lg font-semibold mb-2.5">Reviews</h2>
-          <div className="bg-secondary rounded-xl p-2 w-full">
-            <ScrollArea className="w-full h-[300px]" isVisuallyHidden>
-              <div className="flex flex-col gap-y-4">
-                {product?.reviews?.map(
-                  ({ comment, rating, date, reviewerName }, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col border rounded-lg py-2.5 px-3 shadow-sm bg-white"
-                    >
-                      <div className="flex justify-between items-center">
+      <section className="flex flex-col border rounded-lg p-[1rem_1.5rem] h-[280px]">
+        <h1 className="text-lg font-semibold mb-2.5">
+          What other say about this product
+        </h1>
+        <div className="">
+          <ScrollArea
+            className="min-h-[200px] max-h-[400px] xl:max-h-[220px] bg-secondary p-2 rounded-xl"
+            isVisuallyHidden
+          >
+            <div className="flex flex-col gap-y-2">
+              {product?.reviews?.map(
+                ({ comment, rating, date, reviewerName }, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col border rounded-md py-1 px-2 shadow-sm bg-white"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="inline-flex items-baseline gap-x-2">
                         <p className="font-semibold text-base">
                           {reviewerName}
                         </p>
-                        <div className="flex justify-end items-center gap-x-1.5">
-                          <StarIcon className="size-[15px] text-amber-300/80 fill-amber-300" />
-                          <Label className="text-sm">{rating || 0}</Label>
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground text-xs">
-                        Reviewed on {formatterDate(date)}
-                      </p>
-                      <div className="inline-flex gap-x-2 items-center">
-                        <SendHorizontalIcon className="size-[18px] text-muted-foreground" />
-                        <p className="text-base 2xl:text-lg my-1.5 lg:my-3.5">
-                          {comment}
+                        <p className="text-muted-foreground text-xs">
+                          on {formatterDate(date)}
                         </p>
                       </div>
+                      <div className="flex justify-end items-center gap-x-1.5">
+                        <StarIcon className="size-[15px] text-amber-300/80 fill-amber-300" />
+                        <Label className="text-sm">{rating || 0}</Label>
+                      </div>
                     </div>
-                  )
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+
+                    <div className="inline-flex gap-x-1 items-baseline ml-1">
+                      <SendHorizontalIcon className="size-[16px] pt-0.5 text-muted-foreground" />
+                      <p className="text-base">{comment}</p>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </section>
 
-      <section className="border rounded-lg p-4 flex flex-col gap-y-4 h-fit">
+      <section className="border rounded-lg p-[1rem_1.5rem] flex flex-col gap-y-4 h-[280px]">
         <div>
           <p
             className={cn("text-lg font-bold", {
