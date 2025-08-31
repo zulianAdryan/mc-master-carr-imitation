@@ -4,31 +4,18 @@ import { notFound } from "next/navigation";
 
 import { ProductItemCard } from "@/components/product-item-card";
 
-import type { Category, CategoryProducts } from "@/features/category/types";
-import { config } from "@/lib/config";
-
-type ResponseType = {
-  total: number;
-  skip: number;
-  limit: number;
-  products: CategoryProducts[];
-};
+import { getCategories } from "@/features/category/services/getCategories";
+import { getProductsByCategory } from "@/features/products/services/getProductByCategory";
 
 type PageParams = {
   params: Promise<{ slug: string }>;
 };
 
-const normalizedSlug = (slug: string): string[] => {
-  return slug.split("-");
-};
-
 const capitalizedSlug = (slug: string): string => {
-  const normalizedSlugArr = normalizedSlug(slug);
+  const normalizedSlugArr = slug.split("-");
 
   const transform = (text: string) =>
     `${text[0].toUpperCase()}${text.slice(1)}`;
-
-  // console.log({ splitted, transform: transform(slug) });
 
   if (normalizedSlugArr.length === 1) return transform(slug);
 
@@ -48,27 +35,23 @@ export async function generateMetadata({
   };
 }
 
-const MIN_IMAGE_TO_EAGER_LOADING = 32; // because the maximum items from the grid of the largest screen on first render is 32 items
-
 export async function generateStaticParams() {
-  const res = await fetch(`${config.BASE_URL}/products/categories`);
-  const categories: Category[] = await res.json();
+  const categories = await getCategories();
 
   return categories.map(({ slug }) => ({ slug }));
 }
 
+const MIN_IMAGE_TO_EAGER_LOADING = 32; // because the maximum items from the grid of the largest screen on first render is 32 items
+
 export default async function CategoryPage({ params }: PageParams) {
   const { slug } = await params;
-  const res = await fetch(`${config.BASE_URL}/products/category/${slug}`, {
+  const products = await getProductsByCategory(slug, {
     next: {
-      revalidate: 600, // every 10 minutes
+      revalidate: 600, // ISR
     },
   });
 
-  if (!res.ok) return notFound();
-
-  const data: ResponseType = await res.json();
-  const products = data.products;
+  if (!products) return notFound();
 
   const title = slug.split("-").join(" ");
 
@@ -88,7 +71,7 @@ export default async function CategoryPage({ params }: PageParams) {
         style={{
           display: "grid",
           width: "100%",
-          gap: "1rem",
+          gap: "0.75rem",
         }}
         className="grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 w-full"
       >
