@@ -10,6 +10,8 @@ type PageParams = {
   params: Promise<{ id: Product["id"] }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: PageParams): Promise<Metadata> {
